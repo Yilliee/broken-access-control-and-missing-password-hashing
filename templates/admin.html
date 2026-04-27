@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Admin Panel – VulnDemo{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-2 mb-4">
+  <h2 class="mb-0">Admin Panel</h2>
+  <span class="badge bg-danger vuln-badge">Vulnerability 4 – No Auth Check</span>
+</div>
+
+<div class="alert alert-danger">
+  <strong>⚠ Broken Access Control (Vulnerability 4 + 5)</strong><br />
+  You reached this page without any authentication check.  The
+  <code>/admin</code> route in <code>app.py</code> has <strong>zero</strong>
+  auth logic – anyone who knows the URL can see all users and their plaintext
+  passwords.  The <code>/api/users</code> endpoint works the same way.
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <strong>All Users (including plaintext passwords)</strong>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>ID</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th class="text-danger">Password <span class="badge bg-danger">plaintext!</span></th>
+          <th>Role</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td>{{ u.id }}</td>
+          <td>{{ u.username }}</td>
+          <td>{{ u.email }}</td>
+          <td class="text-danger"><code>{{ u.password }}</code></td>
+          <td>
+            <span class="badge {% if u.role == 'admin' %}bg-danger{% else %}bg-secondary{% endif %}">
+              {{ u.role }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer small text-muted">
+    The same data is available as JSON at
+    <a href="{{ url_for('api_users') }}" target="_blank">/api/users</a>
+    (Vulnerability 5 – unauthenticated API).
+  </div>
+</div>
+
+<div class="mt-4 p-3 fix-box rounded">
+  <strong>Secure implementation would look like:</strong>
+  <pre class="mb-0 mt-2"><code>@app.route("/admin")
+def admin():
+    if "user_id" not in session or session["role"] != "admin":
+        abort(403)
+    ...</code></pre>
+</div>
+{% endblock %}

@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block title %}VulnDemo – Home{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+
+    <div class="text-center mb-5">
+      <h1 class="display-5 fw-bold">Vulnerability Demo Site</h1>
+      <p class="lead text-muted">
+        An intentionally insecure Flask application that demonstrates
+        <strong>Missing Password Hashing</strong> and
+        <strong>Broken Access Control</strong> (both accidental and explicit).
+      </p>
+      <div class="d-flex gap-2 justify-content-center flex-wrap">
+        <a href="{{ url_for('register') }}" class="btn btn-primary">Register</a>
+        <a href="{{ url_for('login') }}" class="btn btn-outline-secondary">Login</a>
+        <a href="{{ url_for('admin') }}" class="btn btn-danger">Admin Panel (no auth!)</a>
+        <a href="{{ url_for('api_users') }}" class="btn btn-outline-danger" target="_blank">
+          /api/users (no auth!)
+        </a>
+      </div>
+    </div>
+
+    <!-- Vulnerabilities overview -->
+    <h2 class="h4 mb-3">Vulnerabilities Demonstrated</h2>
+
+    <!-- 1. Missing password hashing -->
+    <div class="card mb-4">
+      <div class="card-header d-flex align-items-center gap-2">
+        <span class="badge bg-danger vuln-badge">VULNERABILITY 1</span>
+        <strong>Missing Password Hashing</strong>
+      </div>
+      <div class="card-body">
+        <p>
+          When a user registers, their password is saved to the SQLite database exactly
+          as typed – no hashing, no salting.  Login also compares the raw plaintext
+          values.
+        </p>
+        <div class="p-3 mb-3 vuln-box rounded">
+          <strong>Vulnerable code (<code>app.py</code> – register route):</strong>
+          <pre class="mb-0 mt-2"><code># password saved without hashing
+db.execute(
+    "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)",
+    (username, email, password, "user"),
+)</code></pre>
+        </div>
+        <div class="p-3 fix-box rounded">
+          <strong>Secure alternative:</strong>
+          <pre class="mb-0 mt-2"><code>from werkzeug.security import generate_password_hash, check_password_hash
+
+hashed = generate_password_hash(password)   # bcrypt under the hood
+db.execute("INSERT INTO users ... VALUES (?, ?, ?, ?)", (..., hashed, ...))</code></pre>
+        </div>
+        <p class="mt-3 mb-0">
+          <strong>Impact:</strong> If the database is compromised, every user's password
+          is immediately readable.  Passwords are often reused across sites, so a single
+          breach exposes accounts elsewhere.
+        </p>
+      </div>
+    </div>
+
+    <!-- 2. Accidental BAC – profile -->
+    <div class="card mb-4">
+      <div class="card-header d-flex align-items-center gap-2">
+        <span class="badge bg-warning text-dark vuln-badge">VULNERABILITY 2</span>
+        <strong>Broken Access Control – Accidental (IDOR on profile page)</strong>
+      </div>
+      <div class="card-body">
+        <p>
+          The profile route <code>/profile/&lt;id&gt;</code> checks that the visitor is
+          logged in, but <em>forgets</em> to verify that the logged-in user is the owner
+          of the requested profile.  Any authenticated user can view any other user's
+          private profile by changing the number in the URL.
+        </p>
+        <div class="p-3 mb-3 vuln-box rounded">
+          <strong>Vulnerable code (<code>app.py</code> – profile route):</strong>
+          <pre class="mb-0 mt-2"><code>@app.route("/profile/&lt;int:user_id&gt;")
+def profile(user_id):
+    if "user_id" not in session:      # ✓ checks login …
+        return redirect(url_for("login"))
+    # ✗ missing ownership check – any user can access any profile!
+    user = db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()</code></pre>
+        </div>
+        <div class="p-3 fix-box rounded">
+          <strong>Secure alternative:</strong>
+          <pre class="mb-0 mt-2"><code>if session["user_id"] != user_id and session["role"] != "admin":
+    abort(403)</code></pre>
+        </div>
+        <p class="mt-3 mb-0">
+          <strong>Try it:</strong> Log in as <code>alice</code> / <code>alice1234</code>
+          then visit <a href="/profile/1">/profile/1</a> (the admin account).
+        </p>
+      </div>
+    </div>
+
+    <!-- 3. Accidental BAC – change-role -->
+    <div class="card mb-4">
+      <div class="card-header d-flex align-items-center gap-2">
+        <span class="badge bg-warning text-dark vuln-badge">VULNERABILITY 3</span>
+        <strong>Broken Access Control – Accidental (privilege escalation via role change)</strong>
+      </div>
+      <div class="card-body">
+        <p>
+          The <code>/change-role</code> endpoint checks that the requester is logged in
+          but never checks whether they are an <em>admin</em>.  Any regular user can
+          promote themselves to admin by submitting the form (or crafting a direct POST
+          request).
+        </p>
+        <div class="p-3 mb-3 vuln-box rounded">
+          <strong>Vulnerable code (<code>app.py</code> – change_role route):</strong>
+          <pre class="mb-0 mt-2"><code>if "user_id" not in session:   # ✓ checks login …
+    return redirect(url_for("login"))
+# ✗ missing admin check – any logged-in user can change anyone's role!
+db.execute("UPDATE users SET role = ? WHERE id = ?", (new_role, target_user_id))</code></pre>
+        </div>
+        <div class="p-3 fix-box rounded">
+          <strong>Secure alternative:</strong>
+          <pre class="mb-0 mt-2"><code>if session["role"] != "admin":
+    abort(403)</code></pre>
+        </div>
+        <p class="mt-3 mb-0">
+          <strong>Try it:</strong> Log in as <code>alice</code> / <code>alice1234</code>
+          and use the role-change form on the Dashboard to make yourself admin.
+        </p>
+      </div>
+    </div>
+
+    <!-- 4. Explicit BAC – admin panel -->
+    <div class="card mb-4">
+      <div class="card-header d-flex align-items-center gap-2">
+        <span class="badge bg-danger vuln-badge">VULNERABILITY 4</span>
+        <strong>Broken Access Control – Explicit (unprotected admin panel)</strong>
+      </div>
+      <div class="card-body">
+        <p>
+          The <code>/admin</code> route was explicitly coded <em>without any
+          authentication check</em>.  Any anonymous visitor who knows (or guesses) the
+          URL has full access to the admin panel and can see all users.
+        </p>
+        <div class="p-3 mb-3 vuln-box rounded">
+          <strong>Vulnerable code (<code>app.py</code> – admin route):</strong>
+          <pre class="mb-0 mt-2"><code>@app.route("/admin")
+def admin():
+    # No auth check at all – anyone can reach this page
+    users = db.execute("SELECT * FROM users").fetchall()
+    return render_template("admin.html", users=users)</code></pre>
+        </div>
+        <div class="p-3 fix-box rounded">
+          <strong>Secure alternative:</strong>
+          <pre class="mb-0 mt-2"><code>if "user_id" not in session or session["role"] != "admin":
+    abort(403)</code></pre>
+        </div>
+        <p class="mt-3 mb-0">
+          <strong>Try it:</strong> Open <a href="/admin">/admin</a> without logging in.
+        </p>
+      </div>
+    </div>
+
+    <!-- 5. Explicit BAC – API -->
+    <div class="card mb-4">
+      <div class="card-header d-flex align-items-center gap-2">
+        <span class="badge bg-danger vuln-badge">VULNERABILITY 5</span>
+        <strong>Broken Access Control – Explicit (unauthenticated API leaking passwords)</strong>
+      </div>
+      <div class="card-body">
+        <p>
+          The <code>/api/users</code> JSON endpoint was deployed without any
+          authentication check and returns <em>all</em> user records including plaintext
+          passwords.  This combines Vulnerability 1 and Vulnerability 4.
+        </p>
+        <div class="p-3 mb-3 vuln-box rounded">
+          <strong>Vulnerable code (<code>app.py</code> – api_users route):</strong>
+          <pre class="mb-0 mt-2"><code>@app.route("/api/users")
+def api_users():
+    # No auth check; returns plaintext passwords
+    users = db.execute("SELECT * FROM users").fetchall()
+    return jsonify([dict(u) for u in users])</code></pre>
+        </div>
+        <div class="p-3 fix-box rounded">
+          <strong>Secure alternative:</strong>
+          <pre class="mb-0 mt-2"><code># Require admin session AND never expose the password column
+if "user_id" not in session or session["role"] != "admin":
+    abort(403)
+users = db.execute("SELECT id, username, email, role FROM users").fetchall()</code></pre>
+        </div>
+        <p class="mt-3 mb-0">
+          <strong>Try it:</strong>
+          <a href="/api/users" target="_blank">/api/users</a> – no login needed.
+        </p>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

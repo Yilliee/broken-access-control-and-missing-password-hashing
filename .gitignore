@@ -1,0 +1,14 @@
+# SQLite database created at runtime
+users.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# Editor
+.vscode/
+.idea/
