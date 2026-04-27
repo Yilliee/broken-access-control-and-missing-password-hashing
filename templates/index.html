@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}VulnDemo – Home{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6 text-center py-5">
+    <h1 class="display-5 fw-bold mb-3">Welcome to VulnDemo</h1>
+    <p class="lead text-muted mb-4">
+      A simple user management application.
+    </p>
+    <div class="d-flex gap-2 justify-content-center flex-wrap">
+      <a href="{{ url_for('register') }}" class="btn btn-primary">Register</a>
+      <a href="{{ url_for('login') }}" class="btn btn-outline-secondary">Login</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

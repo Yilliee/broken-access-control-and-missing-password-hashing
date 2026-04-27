@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Dashboard – VulnDemo{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-2 mb-4">
+  <h2 class="mb-0">Dashboard</h2>
+  <span class="badge bg-secondary">{{ session.username }}</span>
+  {% if session.role == 'admin' %}
+  <span class="badge bg-danger">admin</span>
+  {% endif %}
+</div>
+
+<div class="row g-4">
+
+  <!-- User list -->
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header">
+        <strong>All Users</strong>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Role</th>
+              <th>Profile</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in users %}
+            <tr {% if u.id == session.user_id %}class="table-primary"{% endif %}>
+              <td>{{ u.id }}</td>
+              <td>{{ u.username }}</td>
+              <td>
+                <span class="badge {% if u.role == 'admin' %}bg-danger{% else %}bg-secondary{% endif %}">
+                  {{ u.role }}
+                </span>
+              </td>
+              <td>
+                <a href="{{ url_for('profile', user_id=u.id) }}" class="btn btn-sm btn-outline-primary">
+                  View
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Role change (accidental BAC) -->
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header">
+        <strong>Change User Role</strong>
+      </div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('change_role') }}">
+          <div class="mb-3">
+            <label class="form-label">Target User</label>
+            <select name="user_id" class="form-select">
+              {% for u in users %}
+              <option value="{{ u.id }}">{{ u.username }} ({{ u.role }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">New Role</label>
+            <select name="role" class="form-select">
+              <option value="user">user</option>
+              <option value="admin">admin</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Change Role</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

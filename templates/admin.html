@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Admin Panel – VulnDemo{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <h2>Admin Panel</h2>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <strong>All Users</strong>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>ID</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Password</th>
+          <th>Role</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td>{{ u.id }}</td>
+          <td>{{ u.username }}</td>
+          <td>{{ u.email }}</td>
+          <td><code>{{ u.password }}</code></td>
+          <td>
+            <span class="badge {% if u.role == 'admin' %}bg-danger{% else %}bg-secondary{% endif %}">
+              {{ u.role }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
