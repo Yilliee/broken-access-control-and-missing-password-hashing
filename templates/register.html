@@ -10,13 +10,6 @@
       </div>
       <div class="card-body">
 
-        <div class="alert alert-danger py-2 mb-3">
-          <strong>⚠ Vulnerability #1 – Missing Password Hashing</strong><br />
-          Your password will be stored in the database <em>exactly as you type it</em>
-          (no hashing).  You can verify this at
-          <a href="{{ url_for('api_users') }}" target="_blank">/api/users</a> after registering.
-        </div>
-
         <form method="post" action="{{ url_for('register') }}">
           <div class="mb-3">
             <label for="username" class="form-label">Username</label>
@@ -29,9 +22,6 @@
           <div class="mb-3">
             <label for="password" class="form-label">Password</label>
             <input type="password" class="form-control" id="password" name="password" required />
-            <div class="form-text text-danger">
-              This will be saved as plaintext in the database.
-            </div>
           </div>
           <button type="submit" class="btn btn-primary w-100">Register</button>
         </form>

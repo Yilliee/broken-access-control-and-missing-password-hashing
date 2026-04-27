@@ -12,24 +12,7 @@
   />
   <style>
     body { padding-top: 70px; }
-
-    .vuln-badge {
-      font-size: 0.75rem;
-      letter-spacing: 0.05em;
-    }
-
-    .vuln-box {
-      border-left: 4px solid #dc3545;
-      background: #fff5f5;
-    }
-
-    .fix-box {
-      border-left: 4px solid #198754;
-      background: #f0fff4;
-    }
-
     code { color: #c0392b; }
-
     .navbar-brand span { font-weight: 700; }
   </style>
 </head>
@@ -39,7 +22,6 @@
   <div class="container">
     <a class="navbar-brand" href="{{ url_for('index') }}">
       <span>VulnDemo</span>
-      <small class="text-warning ms-2" style="font-size:0.7rem;">⚠ Educational Only</small>
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
       <span class="navbar-toggler-icon"></span>
@@ -53,12 +35,11 @@
           <a class="nav-link" href="{{ url_for('profile', user_id=session.user_id) }}">My Profile</a>
         </li>
         {% endif %}
-        <!-- EXPLICIT BROKEN ACCESS CONTROL: admin link shown to everyone, no server-side check either -->
         <li class="nav-item">
-          <a class="nav-link text-danger" href="{{ url_for('admin') }}">Admin Panel</a>
+          <a class="nav-link" href="{{ url_for('admin') }}">Admin Panel</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-danger" href="{{ url_for('api_users') }}" target="_blank">
+          <a class="nav-link" href="{{ url_for('api_users') }}" target="_blank">
             /api/users
           </a>
         </li>
@@ -101,10 +82,7 @@
 </main>
 
 <footer class="text-center text-muted py-4 border-top mt-5">
-  <small>
-    ⚠ This site is intentionally vulnerable for <strong>educational purposes only</strong>.
-    Do not deploy in production.
-  </small>
+  <small>VulnDemo</small>
 </footer>
 
 <script

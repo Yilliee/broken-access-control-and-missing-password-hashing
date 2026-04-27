@@ -15,9 +15,8 @@
   <!-- User list -->
   <div class="col-lg-7">
     <div class="card">
-      <div class="card-header d-flex align-items-center gap-2">
+      <div class="card-header">
         <strong>All Users</strong>
-        <span class="badge bg-warning text-dark vuln-badge">Vulnerability 2 – IDOR</span>
       </div>
       <div class="card-body p-0">
         <table class="table table-hover mb-0">
@@ -49,26 +48,16 @@
           </tbody>
         </table>
       </div>
-      <div class="card-footer text-muted small">
-        Click <strong>View</strong> on any user to exploit the IDOR vulnerability
-        (works even if it is not your own profile).
-      </div>
     </div>
   </div>
 
   <!-- Role change (accidental BAC) -->
   <div class="col-lg-5">
-    <div class="card border-warning">
-      <div class="card-header bg-warning text-dark d-flex align-items-center gap-2">
+    <div class="card">
+      <div class="card-header">
         <strong>Change User Role</strong>
-        <span class="badge bg-dark vuln-badge">Vulnerability 3</span>
       </div>
       <div class="card-body">
-        <p class="small">
-          Any logged-in user can change <em>anyone's</em> role (including their own).
-          The <code>/change-role</code> endpoint only checks that you are logged in –
-          it never verifies that you are an admin.
-        </p>
         <form method="post" action="{{ url_for('change_role') }}">
           <div class="mb-3">
             <label class="form-label">Target User</label>
@@ -85,7 +74,7 @@
               <option value="admin">admin</option>
             </select>
           </div>
-          <button type="submit" class="btn btn-warning w-100">Change Role</button>
+          <button type="submit" class="btn btn-primary w-100">Change Role</button>
         </form>
       </div>
     </div>
