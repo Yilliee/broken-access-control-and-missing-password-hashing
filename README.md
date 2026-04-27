@@ -44,6 +44,12 @@ pip install -r requirements.txt
 python app.py
 ```
 
+To enable Flask's interactive debugger (development only):
+
+```bash
+FLASK_DEBUG=1 python app.py
+```
+
 Open <http://127.0.0.1:5000> in your browser.
 
 The SQLite database (`users.db`) is created automatically on first run with three

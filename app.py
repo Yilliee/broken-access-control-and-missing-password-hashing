@@ -233,7 +233,7 @@ def change_role():
     db = get_db()
     db.execute("UPDATE users SET role = ? WHERE id = ?", (new_role, target_user_id))
     db.commit()
-    flash(f"Role updated to '{new_role}' successfully.", "success")
+    flash("Role updated successfully.", "success")
     return redirect(url_for("dashboard"))
 
 
@@ -274,4 +274,4 @@ def api_users():
 
 if __name__ == "__main__":
     init_db()
-    app.run(debug=True)
+    app.run(debug=os.environ.get("FLASK_DEBUG", "0") == "1")
